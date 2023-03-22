@@ -1,6 +1,6 @@
 import numpy as np
 import seaborn as sbs
-from math import log10
+from math import log2
 def readTrainData(file_name):
     file = open(file_name, 'r')
     lines = file.readlines()
@@ -22,6 +22,7 @@ def readTrainData(file_name):
 def find_class_conditional(texAll,lbAll,voc,cat):
     # returns a nested dictionary of class conditional (Pw), should use laplace smoothing
     # class conditionals: P(word | label)
+    # we will return the log of it
     class_conditionals = {}
     # creating nested dict
     for word in voc:
@@ -37,7 +38,7 @@ def find_class_conditional(texAll,lbAll,voc,cat):
     for label in cat:
         count = lbAll.count(label) + 2
         for word in voc:
-            class_conditionals[label][word] = (class_conditionals[label][word] + 1) / count
+            class_conditionals[label][word] = log2((class_conditionals[label][word] + 1) / count)
     return class_conditionals            
 
     return 0
@@ -61,4 +62,4 @@ def classify_NB_test(Pw,P):
 
 print('hello world')
 texAll, lbAll, voc, cat = readTrainData("C:/Users/WIN10PRO/Desktop/My Stuff/University/BSC/Machine Learning/Machine-Learing/HW1/r8-train-stemmed.txt")
-# print(find_class_conditional(texAll,lbAll,voc,cat))
+print(find_class_conditional(texAll,lbAll,voc,cat))
