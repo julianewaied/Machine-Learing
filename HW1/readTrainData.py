@@ -1,7 +1,6 @@
 import numpy as np
 import seaborn as sbs
 from math import log10
-labels = []
 def readTrainData(file_name):
     file = open(file_name, 'r')
     lines = file.readlines()
@@ -62,5 +61,4 @@ def classify_NB_test(Pw,P):
 
 print('hello world')
 texAll, lbAll, voc, cat = readTrainData("C:/Users/WIN10PRO/Desktop/My Stuff/University/BSC/Machine Learning/Machine-Learing/HW1/r8-train-stemmed.txt")
-print(find_class_conditional(texAll,lbAll,voc,cat))
-print('testing')
+# print(find_class_conditional(texAll,lbAll,voc,cat))
