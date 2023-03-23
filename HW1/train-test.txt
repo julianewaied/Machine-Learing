@@ -1,0 +1,4 @@
+qstn	what the hell
+stmt	hell is hot
+stmt	book is hot
+qstn	is the book hot

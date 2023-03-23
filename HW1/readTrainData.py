@@ -25,23 +25,20 @@ def find_class_conditional(texAll,lbAll,voc,cat):
     # we will return the log of it
     class_conditionals = {}
     # creating nested dict
-    for word in voc:
-        for label in cat:
-            if label not in class_conditionals:
-                class_conditionals[label]={}
+    for label in cat:
+        class_conditionals[label]={}
+        for word in voc:
             class_conditionals[label][word] = 1
     # counting number of class conditionals
     for i in range(0,len(texAll)):
         for word in texAll[i]:
-            class_conditionals[lbAll[i]][word] += 1
+            class_conditionals[lbAll[i]][word] = class_conditionals[lbAll[i]][word] + 1
     # applying laplace smoothing
     for label in cat:
         count = lbAll.count(label) + 2
         for word in voc:
             class_conditionals[label][word] = log2((class_conditionals[label][word] + 1) / count)
-    return class_conditionals            
-
-    return 0
+    return class_conditionals
 def find_prior(cat,lbAll):
     # returns the prior of a label (P)
     # counts has the likelihood for new words
@@ -52,35 +49,39 @@ def find_prior(cat,lbAll):
         count = lbAll.count(label)
         prior = count/len(lbAll)
         priors[label] = log2(prior)
-        counts[label] = -log2((counts +2))
+        counts[label] = -log2((count +2))
     return priors, counts
-def calc_posterior(sentence,label,Pw,P,counts):
-    words = sentence.split()
-    sum = 0
+def calc_posterior(sentence,label,Pw,P,counts,voc):
     p = P[label]
-    for word in words:
+    for word in sentence:
         # summing log2 of likelihood times prior
-        if word not in P:
-            p += counts[label]
+        if word in voc:
+            p = p + Pw[label][word]
         else:
-            p += Pw[label][word]
+            p = p + counts[label]
+    print(sentence,label,2**p)
     return p
-def classify(sentence,Pw,P,cat,counts):
+def classify(sentence,Pw,P,cat,counts,voc):
     # use MAP and find the most probable class 
-    max_p  = calc_posterior(sentence,list(cat)[0],Pw,P,counts)
-    max_label = list(cat)[0]
+    max_p  = -1.0E40
+    max_label = 'dunno'
     for label in cat:
-        p = calc_posterior(sentence,label,Pw,P,counts)
+        p = calc_posterior(sentence,label,Pw,P,counts,voc)
         if(p>max_p):
             max_p = p
             max_label = label
-        elif(p == max_p):
-            if(P[label]>P[max_label]):
-                max_label = label
     return max_label
 def classify_NB_test(Pw,P,cat,counts):
     return 0
 
 print('hello world')
-texAll, lbAll, voc, cat = readTrainData("r8-train-stemmed.txt")
-print(find_class_conditional(texAll,lbAll,voc,cat)[cat.pop()][voc.pop()])
+texAll, lbAll, voc, cat = readTrainData("train-test.txt")
+Pw = find_class_conditional(texAll,lbAll,voc,cat)
+P,counts = find_prior(cat,lbAll)
+error = 0
+texAll1, lbAll1, voc1, cat1 = readTrainData("test-test.txt")
+for i in range(0,len(texAll1)):
+    label = classify(texAll1[i],Pw,P,cat,counts,voc)
+    if(label != lbAll1[i]):
+        error+=1
+print('error rate is : ', error/len(texAll1))
