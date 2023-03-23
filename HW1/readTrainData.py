@@ -52,7 +52,7 @@ def find_prior(cat,lbAll):
         count = lbAll.count(label)
         prior = count/len(lbAll)
         priors[label] = log2(prior)
-        counts[label] = log2(1/(counts +2))
+        counts[label] = -log2((counts +2))
     return priors, counts
 def calc_posterior(sentence,label,Pw,P,counts):
     words = sentence.split()
