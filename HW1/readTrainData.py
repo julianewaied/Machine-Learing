@@ -48,11 +48,13 @@ def find_prior(cat,lbAll):
     priors = {}
     for label in cat:
         prior = lbAll.count(label)/len(lbAll)
-        priors[label] = prior
+        priors[label] = log2(prior)
     return priors
     return 0
-def calc_posterior(sentence,Pw,P,label):
-    # claculate P(label|sentence), pay attention to the log thing!!
+def calc_posterior(sentence,Pw,P,label,lbAll):
+    words = sentence.split()
+    sum = 0
+    
     return 0
 def classify(sentence,Pw,P):
     # use MAP and find the most probable class 
@@ -61,5 +63,5 @@ def classify_NB_test(Pw,P):
     return 0
 
 print('hello world')
-texAll, lbAll, voc, cat = readTrainData("C:/Users/WIN10PRO/Desktop/My Stuff/University/BSC/Machine Learning/Machine-Learing/HW1/r8-train-stemmed.txt")
-print(find_class_conditional(texAll,lbAll,voc,cat))
+texAll, lbAll, voc, cat = readTrainData("r8-train-stemmed.txt")
+print(find_class_conditional(texAll,lbAll,voc,cat)[cat.pop()][voc.pop()])
