@@ -44,22 +44,41 @@ def find_class_conditional(texAll,lbAll,voc,cat):
     return 0
 def find_prior(cat,lbAll):
     # returns the prior of a label (P)
+    # counts has the likelihood for new words
     sum = 0
     priors = {}
+    counts = {}
     for label in cat:
-        prior = lbAll.count(label)/len(lbAll)
+        count = lbAll.count(label)
+        prior = count/len(lbAll)
         priors[label] = log2(prior)
-    return priors
-    return 0
-def calc_posterior(sentence,Pw,P,label,lbAll):
+        counts[label] = log2(1/(counts +2))
+    return priors, counts
+def calc_posterior(sentence,label,Pw,P,counts):
     words = sentence.split()
     sum = 0
-    
-    return 0
-def classify(sentence,Pw,P):
+    p = P[label]
+    for word in words:
+        # summing log2 of likelihood times prior
+        if word not in P:
+            p += counts[label]
+        else:
+            p += Pw[label][word]
+    return p
+def classify(sentence,Pw,P,cat,counts):
     # use MAP and find the most probable class 
-    return 0
-def classify_NB_test(Pw,P):
+    max_p  = calc_posterior(sentence,list(cat)[0],Pw,P,counts)
+    max_label = list(cat)[0]
+    for label in cat:
+        p = calc_posterior(sentence,label,Pw,P,counts)
+        if(p>max_p):
+            max_p = p
+            max_label = label
+        elif(p == max_p):
+            if(P[label]>P[max_label]):
+                max_label = label
+    return max_label
+def classify_NB_test(Pw,P,cat,counts):
     return 0
 
 print('hello world')
