@@ -1,5 +1,6 @@
 import numpy as np
 from math import log2
+import time
 def readTrainData(file_name):
     file = open(file_name, 'r')
     lines = file.readlines()
@@ -18,18 +19,29 @@ def readTrainData(file_name):
     voc = set(voc)
     cat = set(lbAll)
     return texAll, lbAll, voc, cat
-def count_label(lbAll,texAll,label):
-    count = 0
-    for i in range(0,len(lbAll)):
-        if(lbAll[i]==label):
-            count = count + len(texAll[i])
-    return count
+def classify_NB_test(model,texAll,lbAll,voc,cat):
+    success = 0
+    for i in range(0,len(texAll)):
+        label = model.classify(texAll[i])
+        if(label == lbAll[i]):
+           success+=1
+    return success/len(texAll)
 class NBClassifier:
     def __init__(self,texAll,lbAll,voc,cat):
         self.texAll = texAll
         self.lbAll = lbAll
         self.voc = voc
         self.cat = cat
+        self.counts = {}
+        for label in cat:
+            self.counts[label] = 0
+        for i in range(0,len(lbAll)):
+            self.counts[lbAll[i]]+=1
+        self.totals = {}
+        for label in cat:
+            self.totals[label] = 0
+        for i in range(0,len(lbAll)):
+            self.totals[lbAll[i]]+=len(texAll[i])
     def find_class_conditional(self):
         # returns a nested dictionary of class conditional (Pw), should use laplace smoothing
         self.Pw = {}
@@ -44,9 +56,9 @@ class NBClassifier:
                 self.Pw[self.lbAll[i]][word] = self.Pw[self.lbAll[i]][word] + 1
         # applying laplace smoothing
         for label in self.cat:
-            count = count_label(self.lbAll,self.texAll,label) + 2
+            count = self.totals[label] + 2
             for word in self.voc:
-                self.Pw[label][word] = log2(self.Pw[label][word] / count)
+                self.Pw[label][word] = np.log2(self.Pw[label][word] / count)
     def find_prior(self):
         # returns the prior of a label (P)
         # self.neutrals has the likelihood for new words
@@ -54,11 +66,11 @@ class NBClassifier:
         self.P = {}
         self.neutrals = {}
         for label in self.cat:
-            total = count_label(self.lbAll,self.texAll,label)
-            count = self.lbAll.count(label)
+            total = self.totals[label]
+            count = self.counts[label]
             prior = count/len(lbAll)
-            self.P[label] = log2(prior)
-            self.neutrals[label] = log2(1/(total +2))
+            self.P[label] = np.log2(prior)
+            self.neutrals[label] = np.log2(1/(total +2))
     def calc_posterior(self,sentence,label):
         p = self.P[label]
         for word in sentence:
@@ -81,17 +93,12 @@ class NBClassifier:
     def train(self):
         self.find_class_conditional()
         self.find_prior()
-
-def classify_NB_test(model,texAll,lbAll,voc,cat):
-    success = 0
-    for i in range(0,len(texAll)):
-        label = model.classify(texAll[i])
-        if(label == lbAll[i]):
-           success+=1
-    return success/len(texAll)
+print('begin')
+st = time.time()
 texAll, lbAll, voc, cat = readTrainData("r8-train-stemmed.txt")
 model = NBClassifier(texAll,lbAll,voc,cat)
 model.train()
 texAll1, lbAll1, voc1, cat1 = readTrainData("r8-test-stemmed.txt")
 acc_rate = classify_NB_test(model,texAll1, lbAll1, voc1, cat1)
 print('success rate is  : ',acc_rate )
+print('execution time : ',time.time()-st)
