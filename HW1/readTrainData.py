@@ -42,7 +42,7 @@ def find_class_conditional(texAll,lbAll,voc,cat):
                 
     # applying laplace smoothing
     for label in cat:
-        count = count_label(lbAll,texAll,label)
+        count = count_label(lbAll,texAll,label) + 2
         for word in voc:
             class_conditionals[label][word] = log2(class_conditionals[label][word] / count)
     return class_conditionals
@@ -53,10 +53,11 @@ def find_prior(cat,lbAll):
     priors = {}
     counts = {}
     for label in cat:
+        total = count_label(lbAll,texAll,label)
         count = lbAll.count(label)
         prior = count/len(lbAll)
         priors[label] = log2(prior)
-        counts[label] = log2(1/(count +2))
+        counts[label] = log2(1/(total +2))
     return priors, counts
 def calc_posterior(sentence,label,Pw,P,counts,voc):
     p = P[label]
@@ -89,4 +90,4 @@ for i in range(0,len(texAll1)):
     label = classify(texAll1[i],Pw,P,cat,counts,voc)
     if(label == lbAll1[i]):
         success+=1
-print('sucess rate is  : ', success/len(texAll1))
+print('sucess rate is  : ', success/len(texAll1)*100,'%')
