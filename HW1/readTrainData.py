@@ -1,6 +1,7 @@
 import numpy as np
 from math import log2
 import time
+# success rate is 85.6%
 def readTrainData(file_name):
     file = open(file_name, 'r')
     lines = file.readlines()
