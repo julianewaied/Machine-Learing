@@ -57,9 +57,10 @@ class NBClassifier:
                 self.Pw[self.lbAll[i]][word] = self.Pw[self.lbAll[i]][word] + 1
         # applying laplace smoothing
         for label in self.cat:
-            count = self.totals[label] + 2
+            count = self.totals[label] + len(self.voc)
             for word in self.voc:
-                self.Pw[label][word] = np.log2(self.Pw[label][word] / count)
+                if(self.Pw[label][word]!=0):
+                    self.Pw[label][word] = np.log2(self.Pw[label][word] / count)
     def find_prior(self):
         # returns the prior of a label (P)
         # self.neutrals has the likelihood for new words
@@ -71,7 +72,7 @@ class NBClassifier:
             count = self.counts[label]
             prior = count/len(lbAll)
             self.P[label] = np.log2(prior)
-            self.neutrals[label] = np.log2(1/(total +2))
+            self.neutrals[label] = np.log2(1/(total +len(self.voc)))
     def calc_posterior(self,sentence,label):
         p = self.P[label]
         for word in sentence:
@@ -94,12 +95,17 @@ class NBClassifier:
     def train(self):
         self.find_class_conditional()
         self.find_prior()
+    def print(self):
+        print(self.Pw)
+        print(self.P)
 print('begin')
 st = time.time()
-texAll, lbAll, voc, cat = readTrainData("r8-train-stemmed.txt")
+train_path = "r8-train-stemmed.txt"
+test_path = "r8-test-stemmed.txt"
+texAll, lbAll, voc, cat = readTrainData(train_path)
 model = NBClassifier(texAll,lbAll,voc,cat)
 model.train()
-texAll1, lbAll1, voc1, cat1 = readTrainData("r8-test-stemmed.txt")
+texAll1, lbAll1, voc1, cat1 = readTrainData(test_path)
 acc_rate = classify_NB_test(model,texAll1, lbAll1, voc1, cat1)
 print('success rate is  : ',acc_rate )
 print('execution time : ',time.time()-st)
