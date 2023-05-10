@@ -76,7 +76,6 @@ class logistic_regression:
 					self.etta = self.etta/2
 				prev = curr
 				curr = norm
-				print(f'i = {i}, grad = {(curr)} etta= {self.etta}')
 			self.w = self.w - self.etta * gradient
 			i+=1
 				
@@ -94,11 +93,13 @@ class logistic_regression:
 train,test = load(data_path)
 model = logistic_regression(convergance_constant=0.357,learning_rate=2)
 d,l = preprocess(train,change = False)
-print('training...')
+# print('training...')
 w = model.train(train)
 # print('w = ', w)
-train_acc =test_model(model,train)*100
-print('train acc : ',train_acc,'%')
+# train_acc =test_model(model,train)*100
+# print('train acc : ',train_acc,'%')
+plot(d,l,w)
+d,l = preprocess(test,change = False)
 plot(d,l,w)
 accuracy = test_model(model,test)
 print(f"Avg test accuracy: {accuracy * 100}%")	

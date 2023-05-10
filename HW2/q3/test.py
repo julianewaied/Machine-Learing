@@ -34,8 +34,8 @@ accuracy_test = np.mean(y_test_pred == y_test)
 print('Testing accuracy:', accuracy_test)
 
 # Plot the points and the LDF
-plt.scatter(train.iloc[:, 0], train.iloc[:, 1], c=train.iloc[:, -1].map({0: 'red', 1: 'blue'}), edgecolors='k')
-plt.scatter(test.iloc[:, 0], test.iloc[:, 1], c=test.iloc[:, -1].map({0: 'red', 1: 'blue'}), s=40, edgecolors='k')
+plt.scatter(train.iloc[:, 0], train.iloc[:, 1], c=train.iloc[:, -1], cmap='RdBu')
+plt.scatter(test.iloc[:, 0], test.iloc[:, 1], c=test.iloc[:, -1], cmap='RdBu', marker='x')
 x_vals = np.array(plt.gca().get_xlim())
 y_vals = -(w[0]*x_vals + lr.intercept_)/w[1]
 plt.plot(x_vals, y_vals, '--')
