@@ -1,62 +1,118 @@
-﻿import math
+﻿# #!/usr/bin/python
+# # -*- coding: utf-8 -*-
+# import numpy as np
+# import pandas as pd
+# import math
+# from sklearn.feature_extraction.text import CountVectorizer
 
-class NaiveBayesClassifier:
-    def __init__(self):
-        self.class_counts = {} # counts of each class
-        self.word_counts = {} # counts of each word in each class
-        self.vocab = set() # unique words in the training set
 
-    def train(self, data):
-        for line in data:
-            label, sentence = line.strip().split('\t')
-            if label not in self.class_counts:
-                self.class_counts[label] = 0
-                self.word_counts[label] = {}
-            self.class_counts[label] += 1
-            for word in sentence.split():
-                if word not in self.vocab:
-                    self.vocab.add(word)
-                if word not in self.word_counts[label]:
-                    self.word_counts[label][word] = 0
-                self.word_counts[label][word] += 1
+# def readTrainData(file_name):
+#     file = open(file_name, 'r')
+#     lines = file.readlines()
+#     texAll = []
+#     lbAll = []
+#     voc = []
+#     for line in lines:
+#         splitted = line.split('\t')
+#         lbAll.append(splitted[0])
+#         texAll.append(splitted[1].split())
+#         words = splitted[1].split()
+#         for w in words:
+#             voc.append(w)
+#     voc = set(voc)
+#     cat = set(lbAll)
+#     return texAll, lbAll, voc, cat
 
-    def classify(self, sentence):
-        scores = {}
-        for label in self.class_counts:
-            score = math.log(self.class_counts[label])
-            for word in sentence.split():
-                if word in self.word_counts[label]:
-                    count = self.word_counts[label][word]
-                    score += math.log((count) / (self.class_counts[label]))
-                else:
-                    count = 0
-                    score += math.log((count + 1) / (self.class_counts[label] ))
-            scores[label] = score
-        return max(scores, key=scores.get)
 
-    def evaluate(self, data):
-        correct = 0
-        total = 0
-        for line in data:
-            label, sentence = line.strip().split('\t')
-            predicted_label = self.classify(sentence)
-            if predicted_label == label:
-                correct += 1
-            total += 1
-        accuracy = correct / total
-        return accuracy
-# read in the training data
-with open("r8-train-stemmed.txt", 'r') as f:
-    train_data = f.readlines()
+# texAll, lbAll, voc, cat = readTrainData('r8-train-stemmed.txt')
 
-# read in the test data
-with open("r8-test-stemmed.txt", 'r') as f:
-    test_data = f.readlines()
 
-# train the classifier
-classifier = NaiveBayesClassifier()
-classifier.train(train_data)
+# def learn_NB_text():
 
-# evaluate the classifier on the test set
-accuracy = classifier.evaluate(test_data)
-print(f'Accuracy: {accuracy}')
+#     # calculating prrior
+
+#     P = [lbAll.count(cur_cat) for cur_cat in cat]
+#     P = np.array(P)
+#     P = P / len(lbAll)
+
+#     matrix = np.zeros((len(cat), len(voc) + 1))
+#     voc_exr = list(voc.copy())
+#     voc_exr.append('UNKNOWN')
+#     i = 0
+#     for cur_cat in cat:
+
+#         # creating list of sentences which belong to current catagory only
+
+#         catagory_docs = [' '.join(texAll[index]) for (index,
+#                          lbl_name) in enumerate(lbAll) if lbl_name
+#                          == cur_cat]
+
+#         vec_c = CountVectorizer(vocabulary=list(voc))
+#         X_c = vec_c.fit_transform(catagory_docs)  # returns 2D array which we saw on last Tutorial - how many times a word appeared in each sentence
+#         words_c = X_c.toarray().sum(axis=0)  # returns 1D array which says how many copies of words there are in total in all sentences from current category
+
+#         # using Laplace Smoothing
+
+#         words_num_in_catagory = words_c.sum()
+#         words_p = np.array(words_c, dtype=float)
+#         words_p = words_c + 1  # using laplace numerator
+#         words_p = words_p / (words_num_in_catagory + len(voc))  # using laplace denominator
+
+#         # creating probabilities matrix with additoinal column of unknown words (0 occurences)
+
+#         matrix[i] = np.append(words_p, 1 / (words_num_in_catagory
+#                               + len(voc)))
+#         i += 1
+
+#     Pw = pd.DataFrame(matrix, index=cat, columns=voc_exr)  # adding headers to data
+
+#     return Pw, P
+
+
+# texAll2, lbAll2, voc2, cat2 = readTrainData('r8-test-stemmed.txt')
+
+
+# def ClassifyNB_text(Pw, P):
+
+#     # all sentences in test
+
+#     sum_right = 0
+#     for index, sentence in enumerate(texAll2):
+#         max_cat_sum = -math.inf
+#         max_cat_name = ''
+
+#         # all catagories - for comparing and deciding
+
+#         for ic, catagory in enumerate(cat):
+
+#             # calculating array with all the probabiliets of P(word|catagory)
+
+#             sentence_prob_array = np.array([(Pw[word][catagory] if word
+#                     in voc else Pw['UNKNOWN'][catagory]) for word in
+#                     sentence])
+
+#             # instead of doing P(cat)*mul(P(word1|catagory),...)
+#             # we used log! saving calculating time
+
+#             cat_sum_new = np.log(sentence_prob_array).sum()  # log the results and sum them
+#             currect_prob = cat_sum_new + math.log(P[ic])  # bayesian theorem
+
+#             # getting max cat sum and it's name
+
+#             if currect_prob > max_cat_sum:
+#                 max_cat_sum = currect_prob
+#                 max_cat_name = catagory
+
+#         # count number of correctly classified sentences
+
+#         if max_cat_name == lbAll2[index]:
+#             sum_right += 1
+
+#     sum_right = sum_right / len(lbAll2)
+#     return sum_right
+
+
+# Pw, P = learn_NB_text()
+# sum_right = ClassifyNB_text(Pw, P)
+# print(sum_right)
+

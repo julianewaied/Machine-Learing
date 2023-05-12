@@ -118,25 +118,25 @@ for ds_cnt, ds in enumerate(datasets):
 # Classifier for the data in the first column
 X, y = datasets[0]
 ax = plt.subplot(2, len(datasets), i)
-run_classifier(X, y, ax, krnl='poly', C_val=100, mrg=1, gamma=1)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+run_classifier(X, y, ax, krnl='poly', C_val=0.6, mrg=1, gamma=1)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
 i += 1
 
 # Classifier for the data in the second column
-#X, y = datasets[1]
-#ax = plt.subplot(2, len(datasets), i)
-#run_classifier(X, y, ax, krnl=XXX, C_val=XXX, mrg=1, gamma=XXX)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
-#i += 1
+X, y = datasets[1]
+ax = plt.subplot(2, len(datasets), i)
+run_classifier(X, y, ax, krnl='linear', C_val=1, mrg=1, gamma=1)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+i += 1
 
 # Classifier for the data in the third column
-#X, y = datasets[2]
-#ax = plt.subplot(2, len(datasets), i)
-#run_classifier(X, y, ax, krnl=XXX, C_val=XXX, mrg=1, gamma=XXX)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
-#i += 1
+X, y = datasets[2]
+ax = plt.subplot(2, len(datasets), i)
+run_classifier(X, y, ax, krnl='rbf', C_val=0.9, mrg=1, gamma=15)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+i += 1
 
 # Classifier for the data in the last column
-# X, y = datasets[3]
-# ax = plt.subplot(2, len(datasets), i)
-# run_classifier(X, y, ax, krnl='rbf', C_val=4, mrg=3, gamma=0.5)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+X, y = datasets[3]
+ax = plt.subplot(2, len(datasets), i)
+run_classifier(X, y, ax, krnl='poly', C_val=0.4, mrg=3, gamma=0.5)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
 
 
-plt.show()
+# plt.show()
