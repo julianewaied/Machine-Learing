@@ -63,8 +63,8 @@ class logistic_regression:
 			gradient = self.calc_grad(samples,labels)
 			norm = np.linalg.norm(gradient)
 			if(norm<curr):
-				# if(norm<0.98*curr and self.etta>0.01):
-				# 	self.etta = self.etta/2
+				if(norm<0.98*curr and self.etta>0.01):
+					self.etta = self.etta/2
 				prev = curr
 				curr = norm
 			self.w = self.w - self.etta * gradient
@@ -91,21 +91,27 @@ class logistic_regression:
 def evaluate(model,data):
 	epoch_num = 4
 	epoch_sum = 0
+	best_acc = 0
 	data = data.to_numpy()
 	samples,labels = preprocess(data)
+	best_w = np.array([0 for i in range(0,len(samples[0]))])
 	w = np.array([0 for i in range(0,len(samples[0]))])
 	for i in range(0,epoch_num):
 		samp_train, samp_test, lbl_train, lbl_test = train_test_split(samples, labels, test_size=0.1, random_state=42)
-		w =  w + model.train(samp_train,lbl_train)
-		epoch_sum = epoch_sum + model.test_model(samp_test,lbl_test)
-	return (epoch_sum/epoch_num), w
+		curr_w = model.train(samp_train,lbl_train)
+		w =  w + curr_w
+		acc = model.test_model(samp_test,lbl_test)
+		if(acc>best_acc):
+			best_w = curr_w
+			best_acc = acc
+		epoch_sum = epoch_sum + acc
+	return (epoch_sum/epoch_num), best_w
 
 
 
 data = load(data_path)
 # Accuracy is 80%
-model = logistic_regression(convergance_constant=0.357,learning_rate=2)
+model = logistic_regression(convergance_constant=0.357,learning_rate=3.5)
 accuracy, w = evaluate(model,data)
 print(f"Avg test accuracy: {accuracy * 100}%")
-data = data.to_numpy()
-plot(data[:,0:2],data[:,2],w)
+
