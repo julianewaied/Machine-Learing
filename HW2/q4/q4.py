@@ -27,9 +27,9 @@ def linearly_sep():
     X += 2 * rng.uniform(size=X.shape)
     return X, y
 
-
+path = "C:/Users/WIN10PRO/Desktop/My Stuff/University/BSC/Machine Learning/Machine-Learing/HW2/q4/svm_2d_data.mat"
 def svm_data():
-    data = loadmat("svm_2d_data.mat");
+    data = loadmat(path)
     X = data['X']
     y = data['y']
     y = np.reshape(y, (144,))
@@ -116,10 +116,10 @@ for ds_cnt, ds in enumerate(datasets):
 # and remove comments to run
 
 # Classifier for the data in the first column
-#X, y = datasets[0]
-#ax = plt.subplot(2, len(datasets), i)
-#run_classifier(X, y, ax, krnl=XXX, C_val=XXX, mrg=1, gamma=XXX)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
-#i += 1
+X, y = datasets[0]
+ax = plt.subplot(2, len(datasets), i)
+run_classifier(X, y, ax, krnl='poly', C_val=100, mrg=1, gamma=1)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+i += 1
 
 # Classifier for the data in the second column
 #X, y = datasets[1]
@@ -134,9 +134,9 @@ for ds_cnt, ds in enumerate(datasets):
 #i += 1
 
 # Classifier for the data in the last column
-#X, y = datasets[3]
-#ax = plt.subplot(2, len(datasets), i)
-#run_classifier(X, y, ax, krnl=XXX, C_val=XXX, mrg=3, gamma=XXX)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
+# X, y = datasets[3]
+# ax = plt.subplot(2, len(datasets), i)
+# run_classifier(X, y, ax, krnl='rbf', C_val=4, mrg=3, gamma=0.5)   #choose krnl from {'linear', 'poly', 'rbf'}, set the value of C_val and gamma (for 'rbf').
 
 
 plt.show()
