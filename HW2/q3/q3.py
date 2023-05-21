@@ -41,21 +41,18 @@ class logistic_regression:
 		self.etta = learning_rate
 		self.convergance = convergance_constant
 	def calc_grad(self,samples,lbl):
-		vec_grad = np.vectorize(self.single_grad, signature='(n),()->(n)')
-		grads = vec_grad(samples,lbl)
+		grads = np.vectorize(self.single_grad, signature='(n),()->(n)')(samples,lbl)
 		gradient = np.sum(grads,axis = 0)
 		return gradient
 	def single_grad(self, x,y):
-		# to prevent overflow
 		g = self.g(x)
-		g = np.clip(g, -500, 500)
 		scalar = (-y)/(1+np.exp(y*g))
 		answer = scalar * x
 		return answer
 	def train(self,samples,labels):
 		# iterate with gradient descent
 		# w is initially 0 vector
-		self.w = np.array([0 for i in range(0,len(samples[0]))])
+		self.w = np.zeros(samples.shape[1])
 		i=0
 		prev = 0
 		curr =np.linalg.norm(self.calc_grad(samples,labels))
@@ -75,9 +72,7 @@ class logistic_regression:
 			return 1
 		return 0
 	def test_model(self,samples,labels):
-		count = 0
-		pred = np.vectorize(self.count_pred,signature='(n),()->()')
-		predictions = pred(samples,labels)
+		predictions = np.vectorize(self.count_pred,signature='(n),()->()')(samples,labels)
 		return np.mean(predictions)
 		
 	def classify(self,x):
@@ -89,13 +84,13 @@ class logistic_regression:
 		self.w = w
 
 def evaluate(model,data):
-	epoch_num = 4
+	epoch_num = 5
 	epoch_sum = 0
 	best_acc = 0
 	data = data.to_numpy()
 	samples,labels = preprocess(data)
-	best_w = np.array([0 for i in range(0,len(samples[0]))])
-	w = np.array([0 for i in range(0,len(samples[0]))])
+	best_w = np.zeros(samples.shape[1])
+	w = np.zeros(samples.shape[1])
 	for i in range(0,epoch_num):
 		samp_train, samp_test, lbl_train, lbl_test = train_test_split(samples, labels, test_size=0.1, random_state=42)
 		curr_w = model.train(samp_train,lbl_train)
@@ -110,7 +105,7 @@ def evaluate(model,data):
 
 
 data = load(data_path)
-# Accuracy is 80%
+# Accuracy is 80%, lr = 3.5
 model = logistic_regression(convergance_constant=0.357,learning_rate=3.5)
 accuracy, w = evaluate(model,data)
 print(f"Avg test accuracy: {accuracy * 100}%")
