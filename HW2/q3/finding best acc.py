@@ -1,6 +1,6 @@
 ﻿import numpy as np
 import matplotlib.pyplot as plt
-from test import logistic_regression, load, preprocess, evaluate
+from q3 import logistic_regression, load, preprocess, evaluate
 
 def find_best_learning_rate(data, learning_rates):
     accuracies = []
@@ -21,7 +21,7 @@ data = load(data_path)
 num_learning_rates = 20
 min_learning_rate = 0.1
 max_learning_rate = 10
-learning_rates = np.linspace(min_learning_rate, max_learning_rate, num_learning_rates)
+learning_rates = np.linspace(min_learning_rate, max_learning_rate, num_learning_rates).append(6.35263157894736)
 
 # Find the best learning rate
 best_learning_rate, best_accuracy, accuracies = find_best_learning_rate(data, learning_rates)

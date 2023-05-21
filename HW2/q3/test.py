@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
-from time import sleep
+from time import sleep, time
 
 data_path = "exams.csv"
 def plot(data, labels, w):
@@ -31,7 +31,7 @@ def load(path):
 
 def preprocess(data,change=True):
 	points = np.array([np.array([x[0],x[1],1]) for x in data])
-	labels = np.array([x[2] for x in data])
+	labels = data[:,2]
 	if(change):
 		labels[labels == 0] = -1
 	return points,labels
@@ -42,7 +42,7 @@ class logistic_regression:
 		self.convergance = convergance_constant
 	def calc_grad(self,samples,lbl):
 		grads = np.vectorize(self.single_grad, signature='(n),()->(n)')(samples,lbl)
-		gradient = np.sum(grads,axis = 0)
+		gradient = np.mean(grads,axis = 0)
 		return gradient
 	def single_grad(self, x,y):
 		g = self.g(x)
@@ -51,16 +51,16 @@ class logistic_regression:
 		return answer
 	def train(self,samples,labels):
 		# iterate with gradient descent
-		# w is initially 0 vector
-		self.w = np.zeros(samples.shape[1])
+		self.w = np.full(samples.shape[1],0.5)
 		i=0
 		prev = 0
 		curr =np.linalg.norm(self.calc_grad(samples,labels))
-		while(i<9000 and curr>self.convergance):
+		while(curr>self.convergance):
 			gradient = self.calc_grad(samples,labels)
 			curr = np.linalg.norm(gradient)
 			self.w = self.w - self.etta * gradient
 			i+=1
+		print(i)
 		return self.w
 	def count_pred(self,sample,label):
 		if(self.classify(sample) == label):
@@ -82,6 +82,8 @@ def evaluate(model,data):
 	epoch_num = 4
 	epoch_sum = 0
 	best_acc = 0
+	test_data = 0
+	test_labels=0
 	data = data.to_numpy()
 	samples,labels = preprocess(data)
 	best_w = np.zeros(samples.shape[1])
@@ -89,19 +91,22 @@ def evaluate(model,data):
 	for i in range(0,epoch_num):
 		samp_train, samp_test, lbl_train, lbl_test = train_test_split(samples, labels, test_size=0.1, random_state=42)
 		curr_w = model.train(samp_train,lbl_train)
-		w =  w + curr_w
 		acc = model.test_model(samp_test,lbl_test)
 		if(acc>best_acc):
 			best_w = curr_w
 			best_acc = acc
+			test_data = samp_test
+			test_labels = lbl_test
 		epoch_sum = epoch_sum + acc
-	return (epoch_sum/epoch_num), best_w
+	return (epoch_sum/epoch_num), best_w, test_data,test_labels
 
 
-
+t = time()
 data = load(data_path)
-# Accuracy is 80%, lr = 3.5
-model = logistic_regression(convergance_constant=0.357,learning_rate=6E-5)
-accuracy, w = evaluate(model,data)
+# Accuracy is 90%, lr = 6.352631578947369
+model = logistic_regression(convergance_constant=1,learning_rate=6.352631578947369)
+accuracy, w , samp, lbl= evaluate(model,data)
 print(f"Avg test accuracy: {accuracy * 100}%")
-
+print(time()-t)
+data = data.to_numpy()
+plot(data[:,0:2],data[:,2],w)
