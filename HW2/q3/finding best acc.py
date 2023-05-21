@@ -18,10 +18,10 @@ data_path = "exams.csv"
 data = load(data_path)
 
 # Define learning rates to test as a linspace
-num_learning_rates = 20
+num_learning_rates = 10
 min_learning_rate = 0.1
 max_learning_rate = 10
-learning_rates = np.linspace(min_learning_rate, max_learning_rate, num_learning_rates).append(6.35263157894736)
+learning_rates = np.sort(np.append(np.linspace(min_learning_rate, max_learning_rate, num_learning_rates),6.35263157894736))
 
 # Find the best learning rate
 best_learning_rate, best_accuracy, accuracies = find_best_learning_rate(data, learning_rates)
