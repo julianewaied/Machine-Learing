@@ -23,16 +23,17 @@ def load(path):
 	labels = data[:,0]
 	samples = data[:,1:]
 	return samples,labels
-
-
+def isCorrect(model, sample,y):
+	if(model.classify(sample)==y):
+		return 1
+	return 0
+def test(model,test_samples,test_labels):
+	func = np.vectorize(isCorrect,signature="(),(n),()->()")
+	return np.mean(func(model,test_samples,test_labels))
 class PCA():
 
-	def __init__(self,data,original_size,new_size):
-		self.new_size=new_size
-		self.original_size=original_size
-		self.d=original_size**2
-		self.k=new_size**2
-
+	def __init__(self,data,k):
+		self.k = k
 		S = (1/data.shape[0]) * np.cov(np.stack(data).transpose())
 		eigenvalues,eigenvectors = np.linalg.eigh(S)
 		sorted_indices = np.argsort(eigenvalues)[::-1]
@@ -52,47 +53,29 @@ class PCA():
 			projection += np.dot(x, e) * e
 		return projection
 	def decompress_image(self,data):
+		# since we required <e,e>=1 this is a valid decompression
 		decompress_func = np.vectorize(lambda c, E: np.dot(c, E.T), signature='(n,k),(d,k)->(n,d)')
 		reconstructed_data = decompress_func(data,self.E)
 		return reconstructed_data
 
 
-class KNN():
-	def __init__(self,x_train,y_train,k):
+class kNN():
+	def __init__(self, train_samples,train_labels,k):
 		self.k=k
-		self.x_train=x_train.reshape((x_train.shape[0]),-1)
-		self.y_train=y_train
-		self.distance_label_pairs= np.empty((self.x_train.shape[0],2))
+		self.x= train_samples
+		self.y = train_labels
+		self.norms = (np.vectorize(lambda x: np.dot(x,x),signature="(n)->()")(train_samples))
+		print(self.norms.shape)
+	def classify(self,sample):
+		dis = (np.vectorize(lambda x, y, norm: (np.dot(x, y) - norm), signature='(n),(n),()->()')(sample,self.x,self.norms))
+		knn_indices= np.argpartition(dis, self.k)[:self.k]
+		knn_labels = self.y[knn_indices]
+		_, counts = np.unique(knn_labels, return_counts=True)
+		max_count_index = np.argmax(counts)
+		return counts[max_count_index]
+	
+
 		
-	def classify_dataset(self,data):
-		result_labels=np.empty(data.shape[0])
-		for i in range(result_labels.shape[0]):
-			result_labels[i]= self.classify_sample(data[i])
-
-		return result_labels
-
-
-	def classify_sample(self,test_sample):
-		neighbours_labels_counter= np.zeros(10)
-		
-		for i in range(self.x_train.shape[0]):
-			self.distance_label_pairs[i][0]=self.euclidian_distance(test_sample.reshape(-1),self.x_train[i])
-			self.distance_label_pairs[i][1]=self.y_train[i]
-
-		#find k nearest neighbours
-		print("here1")	
-		np.sort(self.distance_label_pairs)
-		print("here2")
-		for i in range(self.k):
-			neighbours_labels_counter[int(self.distance_label_pairs[i][1])]+=1
-		#print("done")
-
-		return neighbours_labels_counter.argmax()
-
-
-	def euclidian_distance(self,sample1,sample2):
-		return 	np.linalg.norm(sample1-sample2,axis=0)
-
 def plot_picture(pixels):
     # convert the list of pixels to a numpy array
     pixels = np.array(pixels)
@@ -111,22 +94,17 @@ def plot_picture(pixels):
 
 if __name__ == '__main__':
 	train_samples, train_labels = load("fashion-mnist_train.csv")
+	test_samples,test_labels = load("fashion-mnist_test.csv")
 	t = time()
-	pca=PCA(train_samples,28,15)
-	compressed_samples = pca.compress(train_samples)
+	pca=PCA(train_samples,15)
+	num = 10000
+	compressed_train = pca.compress(train_samples[0:num])
+	compressed_test = pca.compress(test_samples[0:num])
+	model=kNN(compressed_train,train_labels[0:num], 4)
+	print(test(model,compressed_test,test_labels[0:num]))
 	print(time()-t)
-
-
-
-
-
-	# pca_x_train=pca_model.convert(x_train)
-
-	#f, axarr = plt.subplots(2,1) 	
-	#axarr[0].imshow(model.decompress_image(reduced_train[2]),cmap="gray")
-	#axarr[1].imshow(x_train[2],cmap="gray")
 	
-	# knn_model=KNN(pca_x_train,y_train,1)  #set K
+	
 
 	#classify test set
 	# predicted_labels=knn_model.classify_dataset(pca_model.convert(x_test))
