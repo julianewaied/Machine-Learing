@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import sklearn
-# import tensorflow as tf
+import tensorflow as tf
 from math import inf
 
 def plot_cdf(data):
@@ -62,39 +62,51 @@ class KNN():
 		self.x_train=x_train.reshape((x_train.shape[0]),-1)
 		self.y_train=y_train
 		self.distance_label_pairs= np.empty((self.x_train.shape[0],2))
-		
-	def classify_dataset(self,data):
-		result_labels=np.empty(data.shape[0])
-		for i in range(result_labels.shape[0]):
-			result_labels[i]= self.classify_sample(data[i])
+	
 
-		return result_labels
-
+	@property
+	def dataset_classifier(self):
+		return np.vectorize(self.classify_sample,signature='(n,n)->()')
 
 	def classify_sample(self,test_sample):
-		neighbours_labels_counter= np.zeros(10)
+		self.neighbours_labels_counter= np.zeros(10)
 		
-		for i in range(self.x_train.shape[0]):
-			self.distance_label_pairs[i][0]=self.euclidian_distance(test_sample.reshape(-1),self.x_train[i])
-			self.distance_label_pairs[i][1]=self.y_train[i]
+		
+		#self.distance_label_pairs[:,0]=np.vectorize(self.euclidian_distance,signature='(n),(n)->()')(self.x_train,test_sample.flatten())
+		
+		self.distance_label_pairs[:,1]=self.y_train
+		# for i in range(self.x_train.shape[0]):
+		# 	self.distance_label_pairs[i][0]=self.euclidian_distance(test_sample.reshape(-1),self.x_train[i])
+		# 	self.distance_label_pairs[i][1]=self.y_train[i]
 
 		#find k nearest neighbours
-		print("here1")	
+		
 		np.sort(self.distance_label_pairs)
-		print("here2")
-		for i in range(self.k):
-			neighbours_labels_counter[int(self.distance_label_pairs[i][1])]+=1
-		#print("done")
+		np.vectorize(self.count_neighbour,signature='(2)->()')(self.distance_label_pairs[:self.k])
 
-		return neighbours_labels_counter.argmax()
+		
+		# for i in range(self.k):
+		# 	self.neighbours_labels_counter[int(self.distance_label_pairs[i][1])]+=1
+		#print("done1\ndone2")
 
+		return self.neighbours_labels_counter.argmax()
+
+	def count_neighbour(self,pair):
+		self.neighbours_labels_counter[int(pair[1])]+=1
+		return 0
 
 	def euclidian_distance(self,sample1,sample2):
-		return 	np.linalg.norm(sample1-sample2,axis=0)
+		return 3
+		#return 	np.linalg.norm(sample1-sample2,axis=0)
 
 
+def test_classify_speed(classifier,sample):
+	pass
 
 if __name__ == '__main__':
+	arr= np.array([1,2,3])
+	arr[:1][0]=3
+	print(arr)
 	(x_train, y_train), (x_test, y_test) = tf.keras.datasets.fashion_mnist.load_data()
 	#new_x_train= np.array([x_train[i] for i in range(x_train.shape[0]) if y_train[i]==9])
 
@@ -108,17 +120,19 @@ if __name__ == '__main__':
 	knn_model=KNN(pca_x_train,y_train,1)  #set K
 
 	#classify test set
-	predicted_labels=knn_model.classify_dataset(pca_model.convert(x_test))
+	#predicted_labels=knn_model.dataset_classifier(pca_model.convert(x_test))
 
 	#test accuracy
-	correct_count=0
-	for i in range(y_test.shape):
-		if(y_test[i]==predicted_labels[i]):
-			correct_count+=1
+	# correct_count=0
+	# for i in range(y_test.shape):
+	# 	if(y_test[i]==predicted_labels[i]):
+	# 		correct_count+=1
 
-	accuracy=correct_count/y_test.shape
+	# accuracy=correct_count/y_test.shape
 
 	#plt.show()
-
+	accuracy=0
 	print(f"Test accuracy is: {accuracy * 100}%")
+
+
 
