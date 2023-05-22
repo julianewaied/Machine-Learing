@@ -1,8 +1,7 @@
 ﻿import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import sklearn
-# import tensorflow as tf
+from time import time
 from math import inf
 
 def plot_cdf(data):
@@ -18,42 +17,44 @@ def plot_cdf(data):
 	plt.title('Cumulative Distribution Function of Eigenvalues')
 	plt.show()
 
+def load(path):
+	data = pd.read_csv(path)
+	data = data.to_numpy()
+	labels = data[:,0]
+	samples = data[:,1:]
+	return samples,labels
+
 
 class PCA():
 
 	def __init__(self,data,original_size,new_size):
 		self.new_size=new_size
 		self.original_size=original_size
-		self.d=original_size*original_size
-		self.k=new_size*new_size
+		self.d=original_size**2
+		self.k=new_size**2
 
-		#flatten features
-		flattened_data= data.reshape((data.shape[0],-1))
-
-		#normalize data
-		mean= flattened_data.mean(axis=0)
-		Z= flattened_data-mean
-
-
-		#compute scatter matrix, eigenvalues, eigenvectors
-
-		S= np.matmul(Z.transpose(),Z)
+		S = (1/data.shape[0]) * np.cov(np.stack(data).transpose())
 		eigenvalues,eigenvectors = np.linalg.eigh(S)
-
-		#plot_cdf(eigenvalues)
-		#get the k eigenvectors with the largest eigenvalues
+		sorted_indices = np.argsort(eigenvalues)[::-1]
+		sorted_eigenvectors = eigenvectors[:, sorted_indices]
+		self.E= sorted_eigenvectors[:,-self.k:]
+		# plot_cdf(eigenvalues)
 		
-		self.E= eigenvectors[:,-self.k:].transpose()	
 
-	def convert(self,data):
-		#reduce data to smaller dimention
-		feature_vectors= np.matmul(self.E, data.reshape((data.shape[0],-1)).transpose()).transpose()
-		return feature_vectors.reshape((feature_vectors.shape[0],self.new_size,self.new_size))
-
-	def decompress_image(self,compressed_img):
-		flattened= compressed_img.reshape((self.k,-1))
-		decompressed_image= np.matmul(flattened.transpose(),self.E).transpose()
-		return decompressed_image.reshape(self.original_size,self.original_size)
+	def compress(self,data):
+		func = np.vectorize(lambda x,E: np.matmul(x,E), signature="(n),(n,m)->(m)")
+		return func(data,self.E)
+	def project(self,x):
+		projection = np.zeros(len(x))
+		es = self.E.T
+		print(projection.shape)
+		for e in es:
+			projection += np.dot(x, e) * e
+		return projection
+	def decompress_image(self,data):
+		decompress_func = np.vectorize(lambda c, E: np.dot(c, E.T), signature='(n,k),(d,k)->(n,d)')
+		reconstructed_data = decompress_func(data,self.E)
+		return reconstructed_data
 
 
 class KNN():
@@ -92,33 +93,53 @@ class KNN():
 	def euclidian_distance(self,sample1,sample2):
 		return 	np.linalg.norm(sample1-sample2,axis=0)
 
-
+def plot_picture(pixels):
+    # convert the list of pixels to a numpy array
+    pixels = np.array(pixels)
+    
+    # determine the dimensions of the picture
+    num_pixels = len(pixels)
+    dim = int(np.sqrt(num_pixels))
+    
+    # reshape the array into a 2D array with the correct dimensions
+    pixels = pixels.reshape(dim, dim)
+    
+    # plot the picture using matplotlib
+    plt.imshow(pixels, cmap='gray')
+    plt.axis('off')
+    plt.show()
 
 if __name__ == '__main__':
-	(x_train, y_train), (x_test, y_test) = tf.keras.datasets.fashion_mnist.load_data()
-	#new_x_train= np.array([x_train[i] for i in range(x_train.shape[0]) if y_train[i]==9])
+	train_samples, train_labels = load("fashion-mnist_train.csv")
+	t = time()
+	pca=PCA(train_samples,28,15)
+	compressed_samples = pca.compress(train_samples)
+	print(time()-t)
 
-	pca_model=PCA(x_train,28,5)
-	pca_x_train=pca_model.convert(x_train)
+
+
+
+
+	# pca_x_train=pca_model.convert(x_train)
 
 	#f, axarr = plt.subplots(2,1) 	
 	#axarr[0].imshow(model.decompress_image(reduced_train[2]),cmap="gray")
 	#axarr[1].imshow(x_train[2],cmap="gray")
 	
-	knn_model=KNN(pca_x_train,y_train,1)  #set K
+	# knn_model=KNN(pca_x_train,y_train,1)  #set K
 
 	#classify test set
-	predicted_labels=knn_model.classify_dataset(pca_model.convert(x_test))
+	# predicted_labels=knn_model.classify_dataset(pca_model.convert(x_test))
 
 	#test accuracy
-	correct_count=0
-	for i in range(y_test.shape):
-		if(y_test[i]==predicted_labels[i]):
-			correct_count+=1
+	# correct_count=0
+	# for i in range(y_test.shape):
+	# 	if(y_test[i]==predicted_labels[i]):
+	# 		correct_count+=1
 
-	accuracy=correct_count/y_test.shape
+	# accuracy=correct_count/y_test.shape
 
 	#plt.show()
 
-	print(f"Test accuracy is: {accuracy * 100}%")
+	# print(f"Test accuracy is: {accuracy * 100}%")
 
