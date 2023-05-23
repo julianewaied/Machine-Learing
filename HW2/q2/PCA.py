@@ -1,36 +1,28 @@
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.decomposition import PCA
-from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+import pandas as pd
+from collections import Counter
+from q2 import PCA, kNN, load, test
 
-# Load the dataset
-train_data = np.loadtxt("fashion-mnist_train.csv", delimiter=",", skiprows=1)
-test_data = np.loadtxt("fashion-mnist_test.csv", delimiter=",", skiprows=1)
+train_samples, train_labels = load("fashion-mnist_train.csv")
+test_samples, test_labels = load("fashion-mnist_test.csv")
+pca = PCA(train_samples, 15)
+num_train = 4000
+num_test = 2000
+compressed_train = pca.compress(train_samples[0:num_train])
+compressed_test = pca.compress(test_samples[0:num_test])
 
-# Extract labels from the dataset
-train_labels = train_data[:, 0]
-test_labels = test_data[:, 0]
+accuracy_scores = []
+k_values = range(1,11)  # Try values from 0 to 15 for k
 
-# Extract features from the dataset
-train_features = train_data[:, 1:]
-test_features = test_data[:, 1:]
+for k in k_values:
+    model = kNN(compressed_train, train_labels[0:num_train], k)
+    accuracy = test(model, compressed_test, test_labels[0:num_test])
+    print(f'For k = {k}, acc = {accuracy}')
+    accuracy_scores.append(accuracy)
 
-# Apply PCA for dimensionality reduction
-pca = PCA(n_components=15)
-train_features_pca = pca.fit_transform(train_features)
-test_features_pca = pca.transform(test_features)
-
-# Create a k-NN classifier with k=8
-knn = KNeighborsClassifier(n_neighbors=8)
-
-# Train the classifier
-knn.fit(train_features_pca, train_labels)
-
-# Make predictions on the test set
-predictions = knn.predict(test_features_pca)
-
-# Calculate the accuracy of the predictions
-accuracy = accuracy_score(test_labels, predictions)
-
-# Print the accuracy
-print(f"Test accuracy is: {accuracy * 100}%")
+plt.plot(k_values, accuracy_scores)
+plt.xlabel('k')
+plt.ylabel('Accuracy')
+plt.title('Accuracy vs. k for kNN Classifier')
+plt.show()
