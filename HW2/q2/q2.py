@@ -104,7 +104,7 @@ num_train = 8000
 num_test = 4000
 compressed_train = pca.compress(train_samples[0:num_train])
 compressed_test = pca.compress(test_samples[0:num_test])
-model=kNN(compressed_train,train_labels[0:num_train], 6)
-accuracy = test(model,compressed_test,test_labels[0:num_test])	
+model=kNN(compressed_train[0:num_train],train_labels[0:num_train], 6)
+accuracy = test(model,compressed_test[0:num_test],test_labels[0:num_test])	
 print(f"Test accuracy is: {accuracy * 100}%")
 
