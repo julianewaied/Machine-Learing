@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from time import time
 from math import inf
+from collections import Counter
 
 def plot_cdf(data):
 	sorted_data = np.sort(data)[::-1]
@@ -19,26 +20,33 @@ def plot_cdf(data):
 
 def load(path):
 	data = pd.read_csv(path)
+	random_state = np.random.RandomState(seed=42) 
+	shuffled_index = random_state.permutation(data.index)
+	data = data.reindex(shuffled_index)
 	data = data.to_numpy()
 	labels = data[:,0]
 	samples = data[:,1:]
 	return samples,labels
+
 def isCorrect(model, sample,y):
-	if(model.classify(sample)==y):
+	pred = model.classify(sample)
+	if(pred==y):
 		return 1
 	return 0
+
 def test(model,test_samples,test_labels):
 	func = np.vectorize(isCorrect,signature="(),(n),()->()")
 	return np.mean(func(model,test_samples,test_labels))
+
 class PCA():
 
 	def __init__(self,data,k):
 		self.k = k
-		S = (1/data.shape[0]) * np.cov(np.stack(data).transpose())
+		S = (data.shape[0]) * np.cov(np.stack(data).transpose())
 		eigenvalues,eigenvectors = np.linalg.eigh(S)
 		sorted_indices = np.argsort(eigenvalues)[::-1]
 		sorted_eigenvectors = eigenvectors[:, sorted_indices]
-		self.E= sorted_eigenvectors[:,-self.k:]
+		self.E = sorted_eigenvectors[:, :self.k]
 		# plot_cdf(eigenvalues)
 		
 
@@ -48,7 +56,6 @@ class PCA():
 	def project(self,x):
 		projection = np.zeros(len(x))
 		es = self.E.T
-		print(projection.shape)
 		for e in es:
 			projection += np.dot(x, e) * e
 		return projection
@@ -58,23 +65,19 @@ class PCA():
 		reconstructed_data = decompress_func(data,self.E)
 		return reconstructed_data
 
-
 class kNN():
 	def __init__(self, train_samples,train_labels,k):
 		self.k=k
 		self.x= train_samples
 		self.y = train_labels
-		self.norms = (np.vectorize(lambda x: np.dot(x,x),signature="(n)->()")(train_samples))
-		print(self.norms.shape)
+		self.norms = (np.vectorize(lambda x: 0.5* np.dot(x,x),signature="(n)->()")(train_samples))
 	def classify(self,sample):
-		dis = (np.vectorize(lambda x, y, norm: (np.dot(x, y) - norm), signature='(n),(n),()->()')(sample,self.x,self.norms))
-		knn_indices= np.argpartition(dis, self.k)[:self.k]
+		dis = (np.vectorize(lambda x, y, norm: (norm - np.dot(x, y)), signature='(n),(n),()->()')(sample,self.x,self.norms))
+		knn_indices = np.argpartition(dis, self.k)[:self.k]
 		knn_labels = self.y[knn_indices]
-		_, counts = np.unique(knn_labels, return_counts=True)
-		max_count_index = np.argmax(counts)
-		return counts[max_count_index]
-	
-
+		counter = Counter(knn_labels)
+		max_count_label = counter.most_common(1)[0][0]
+		return max_count_label
 		
 def plot_picture(pixels):
     # convert the list of pixels to a numpy array
@@ -97,27 +100,15 @@ if __name__ == '__main__':
 	test_samples,test_labels = load("fashion-mnist_test.csv")
 	t = time()
 	pca=PCA(train_samples,15)
-	num = 10000
-	compressed_train = pca.compress(train_samples[0:num])
-	compressed_test = pca.compress(test_samples[0:num])
-	model=kNN(compressed_train,train_labels[0:num], 4)
-	print(test(model,compressed_test,test_labels[0:num]))
+	num_train = 8000
+	num_test = 10000
+	print('test' , num_test,'train',num_train)
+	compressed_train = pca.compress(train_samples[0:num_train])
+	compressed_test = pca.compress(test_samples[0:num_test])
+	model=kNN(compressed_train,train_labels[0:num_train], 8)
+	print('testing...')
+	print(test(model,compressed_test,test_labels[0:num_test])*100)
 	print(time()-t)
 	
-	
-
-	#classify test set
-	# predicted_labels=knn_model.classify_dataset(pca_model.convert(x_test))
-
-	#test accuracy
-	# correct_count=0
-	# for i in range(y_test.shape):
-	# 	if(y_test[i]==predicted_labels[i]):
-	# 		correct_count+=1
-
-	# accuracy=correct_count/y_test.shape
-
-	#plt.show()
-
 	# print(f"Test accuracy is: {accuracy * 100}%")
 
