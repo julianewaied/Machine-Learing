@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from collections import Counter
+from time import time 
 
 # Test accuracy is: 81.6%
 
@@ -100,11 +101,13 @@ train_samples, train_labels = load("fashion-mnist_train.csv")
 test_samples,test_labels = load("fashion-mnist_test.csv")
 pca=PCA(train_samples,15)
 # 8000 is quite enough data to get a good classifier
-num_train = 8000
-num_test = 4000
+num_train = 50000
+num_test = 10000
 compressed_train = pca.compress(train_samples[0:num_train])
 compressed_test = pca.compress(test_samples[0:num_test])
 model=kNN(compressed_train[0:num_train],train_labels[0:num_train], 6)
+t = time()
 accuracy = test(model,compressed_test[0:num_test],test_labels[0:num_test])	
+print('time required is : ', time()-t)
 print(f"Test accuracy is: {accuracy * 100}%")
 
