@@ -79,6 +79,10 @@ class kNN():
 		counter = Counter(knn_labels)
 		max_count_label = counter.most_common(1)[0][0]
 		return max_count_label
+	def classify_all(self,samples):
+		print(samples.shape, self.x[np.newaxis, :].shape)
+		M = np.matmul(samples[:, np.newaxis], self.x[np.newaxis, :].T)
+		dis = self.norms - M
 		
 def plot_picture(pixels):
     # convert the list of pixels to a numpy array
@@ -107,7 +111,8 @@ compressed_train = pca.compress(train_samples[0:num_train])
 compressed_test = pca.compress(test_samples[0:num_test])
 model=kNN(compressed_train[0:num_train],train_labels[0:num_train], 6)
 t = time()
-accuracy = test(model,compressed_test[0:num_test],test_labels[0:num_test])	
+model.classify_all(compressed_test)
+# accuracy = test(model,compressed_test[0:num_test],test_labels[0:num_test])	
 print('time required is : ', time()-t)
-print(f"Test accuracy is: {accuracy * 100}%")
+# print(f"Test accuracy is: {accuracy * 100}%")
 
