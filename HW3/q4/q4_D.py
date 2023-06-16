@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 
 import warnings
 warnings.filterwarnings("ignore")
+# returns compresseed image from image X by cluster clust
 def compress(X,clust):
     for i in range(20):
         X[clust.labels_==i] = clust.cluster_centers_[i]
