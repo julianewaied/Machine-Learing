@@ -17,7 +17,8 @@ class Kmeans:
 
 	def reassign_centroids(self, X, labels):
 		centroids = np.zeros((self.n_clusters, X.shape[1]))
-		# Your code goes here
+		for i in range(self.n_clusters):
+			centroids[i] = np.mean(X[labels==i])
 		return centroids
 
 	def compute_distance(self, X, centroids):
@@ -55,17 +56,16 @@ db = pd.read_csv('exams.csv', header=None).to_numpy()
 data, labels = db[:,:-1], db[:,-1]
 
 # Plot the data with no labelings
-plt.scatter(data[:, 0], data[:, 1])
-plt.show()
+# plt.scatter(data[:, 0], data[:, 1])
+# plt.show()
 
 print(f'Number of class 0: {len(data[labels == 0])}')
 print(f'Number of class 1: {len(data[labels == 1])}')
 
 '''					SECTION B 					'''
-
-# Initialize cluster object names clust with k=2
-# Fit the data
-
+k = 2
+clust = Kmeans(k)
+clust.fit(data)
 # Plot the clustered data with centroids
 labels = clust.labels
 centroids = clust.centroids
@@ -73,25 +73,27 @@ centroids = clust.centroids
 c0 = data[labels == 0]
 c1 = data[labels == 1]
 
-plt.scatter(c0[:,0], c0[:,1], c='green', label='cluster 1')
-plt.scatter(c1[:,0], c1[:,1], c='blue', label='cluster 2')
-plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=200, c='black', label='centroid')
-#plt.legend()
+# plt.scatter(c0[:,0], c0[:,1], c='green', label='cluster 1')
+# plt.scatter(c1[:,0], c1[:,1], c='blue', label='cluster 2')
+# plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=200, c='black', label='centroid')
+# plt.legend()
 
-plt.show()
+# plt.show()
 
 '''					SECTION C 					'''
 
-# sse = []
-# list_k = list(range(1, 11))
+sse = []
+list_k = list(range(1, 11))
 
-# for k in list_k:
-    # sse.append(error_of_current_clustering)
+for k in list_k:
+	clust = Kmeans(k)
+	clust.fit(data)
+	sse.append(clust.compute_sse(data,clust.labels,clust.centroids))
 
 '''Plot sse against k'''
-# plt.figure(figsize=(6, 6))
-# plt.plot(list_k, sse, '-o')
-# plt.xlabel(r'Number of clusters *k*')
-# plt.ylabel('Sum of squared distance')
+plt.figure(figsize=(6, 6))
+plt.plot(list_k, sse, '-o')
+plt.xlabel(r'Number of clusters *k*')
+plt.ylabel('Sum of squared distance')
 # plt.show()
 
