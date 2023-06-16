@@ -63,7 +63,7 @@ print(f'Number of class 0: {len(data[labels == 0])}')
 print(f'Number of class 1: {len(data[labels == 1])}')
 
 '''					SECTION B 					'''
-k = 2
+k = 4
 clust = Kmeans(k)
 clust.fit(data)
 # Plot the clustered data with centroids
@@ -72,13 +72,17 @@ centroids = clust.centroids
 
 c0 = data[labels == 0]
 c1 = data[labels == 1]
+c2 = data[labels == 2]
+c3 = data[labels == 3]
 
-# plt.scatter(c0[:,0], c0[:,1], c='green', label='cluster 1')
-# plt.scatter(c1[:,0], c1[:,1], c='blue', label='cluster 2')
-# plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=200, c='black', label='centroid')
-# plt.legend()
+plt.scatter(c0[:,0], c0[:,1], c='green', label='cluster 1')
+plt.scatter(c1[:,0], c1[:,1], c='blue', label='cluster 2')
+plt.scatter(c2[:,0], c2[:,1], c='red', label='cluster 3')
+plt.scatter(c3[:,0], c3[:,1], c='yellow', label='cluster 4')
+plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=200, c='black', label='centroid')
+plt.legend()
 
-# plt.show()
+plt.show()
 
 '''					SECTION C 					'''
 

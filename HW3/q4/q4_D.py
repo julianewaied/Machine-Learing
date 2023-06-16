@@ -3,15 +3,18 @@ import matplotlib.pyplot as plt
 import cv2
 from sklearn.cluster import KMeans
 
-def cluster(image, clust):
-    return 0
+import warnings
+warnings.filterwarnings("ignore")
+def compress(X,clust):
+    for i in range(20):
+        X[clust.labels_==i] = clust.cluster_centers_[i]
+    return X
 # Read the image
 img = cv2.imread('image.jpg')
 img_size = img.shape
 
 #Reshape it to be 2-dimension
 X = img.reshape(img_size[0] * img_size[1], img_size[2])		# Turn hxwx3 into (h*w)x3
-print(X.shape)
 '''					SECTION D 					'''
 
 # Run the Kmeans algorithm
@@ -26,7 +29,7 @@ The km has the following properties:
 '''
 
 # Use the centroids to compress the image
-img_compressed = [] # Use cluster_centers_ and labels_
+img_compressed = compress(X,km) # Use cluster_centers_ and labels_
 img_compressed = np.clip(img_compressed.astype('uint8'), 0, 255)
 
 # Reshape X_recovered to have the same dimension as the original image 128 * 128 * 3'''
@@ -35,7 +38,7 @@ img_compressed = img_compressed.reshape(img_size[0], img_size[1], img_size[2])
 # Plot the original and the compressed image next to each other'''
 fig, ax = plt.subplots(1, 2, figsize = (12, 8))
 
-ax[0].imshow(img)
+ax[0].imshow(cv2.imread('image.jpg'))
 ax[0].set_title('Original Image')
 
 ax[1].imshow(img_compressed)
