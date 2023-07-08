@@ -12,15 +12,30 @@ class DecisionTree:
 		labels = data.iloc[:, -1]
 		# Your code goes here
 
+		total_entropy=0
+		classes,counts=np.unique(labels,return_counts=True)
+
+		for count in counts:
+			p= count/labels.shape[0]
+			if p!=0:
+				total_entropy-= p*np.log2(p)
+
+		return total_entropy
+
 	# Calculate the information gain of a feature based on its value
 	def calculate_information_gain(self, data, feature):
 		total_entropy = self.calculate_entropy(data)
 		information_gain = total_entropy
-		
+		total_node_objects= data.shape[0]
 		distincts = list(set(data[feature]))		#get the values of the feature
 		
 		# Your code goes here
-		
+		for value in distincts:
+			filtered_data= self.filter_data(data,feature,value)
+			child_entropy=self.calculate_entropy(filtered_data)
+
+			information_gain -= child_entropy*filtered_data.shape[0]/total_node_objects
+
 		return information_gain
 
 	def filter_data(self, data, feature, value):
@@ -54,7 +69,6 @@ class DecisionTree:
 
 		# Create the tree node
 		tree_node = {}
-		
 		distincts = list(set(data[selected_feature]))
 		for value in distincts:
 			new_data = self.filter_data(data, selected_feature, value)
@@ -76,11 +90,14 @@ class DecisionTree:
 			while isinstance(current_node, dict):
 				split_condition = next(iter(current_node))
 				feature, value = split_condition
+				print("-------------------------------------------------------")
+				self._plot(current_node,0)
 				current_node = current_node[feature, row[feature]]
 			predictions.append(current_node)
 
 		return predictions
-	
+
+
 	def _plot(self, tree, indent):
 		depth = 1
 		for key, value in tree.items():
@@ -106,14 +123,14 @@ data = pd.read_csv('cars.csv')
 # tree.plot()
 
 '''					SECTION B 					'''
-#train, test = train_test_split(data, test_size=0.2, random_state=7)
+train, test = train_test_split(data, test_size=0.2, random_state=7)
 
 # Get training accuracy
-# tree = DecisionTree()
-# tree.fit(train)
-# pred = Your code goes here
-# acc = (pred == train.iloc[:,-1]).sum() / len(train)
-# print(f'Training accuracy is {acc}')
+tree = DecisionTree()
+tree.fit(train)
+pred = tree.predict(test)
+acc = (pred == train.iloc[:,-1]).sum() / len(train)
+print(f'Training accuracy is {acc}')
 
 '''					SECTION C 					'''
 # tree = DecisionTree(maxdepth=5)
